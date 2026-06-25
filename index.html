@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#ffffff">
+    <title>Mike Dash</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="assets/icon-192.png">
+    <link rel="apple-touch-icon" href="assets/icon-192.png">
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <main class="game-shell" aria-label="Mike Dash game">
+      <div class="topbar">
+        <h1>Mike Dash</h1>
+        <div class="scoreboard" aria-live="polite">
+          <span>HI <strong id="highScore">00000</strong></span>
+          <span><strong id="score">00000</strong></span>
+        </div>
+      </div>
+
+      <canvas id="gameCanvas" width="960" height="360" aria-label="Mike Dash play field"></canvas>
+
+      <div class="touch-controls" aria-label="Touch controls">
+        <button id="slideButton" type="button" aria-label="Slide">Duck</button>
+        <button id="jumpButton" type="button" aria-label="Jump">Jump</button>
+      </div>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
