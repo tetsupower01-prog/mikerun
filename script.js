@@ -57,6 +57,8 @@ const player = {
   onGround: true,
   sliding: false,
   slideMs: 0,
+  jumpHeld: false,
+  jumpHoldMs: 0,
   runFrame: 0,
   animMs: 0
 };
@@ -67,8 +69,8 @@ let score = 0;
 let displayScore = 0;
 let highScore = Number(localStorage.getItem(STORAGE_KEY) || 0);
 let speed = 240;
-let spawnMs = 0;
-let nextSpawnMs = 1400;
+let distanceUntilSpawn = 340;
+let lastGapBand = "normal";
 let obstacles = [];
 let clouds = [];
 let groundOffset = 0;
@@ -82,8 +84,8 @@ function resetGame() {
   score = 0;
   displayScore = 0;
   speed = 240;
-  spawnMs = 0;
-  nextSpawnMs = 1350;
+  distanceUntilSpawn = 340;
+  lastGapBand = "normal";
   obstacles = [];
   clouds = makeClouds();
   groundOffset = 0;
@@ -93,6 +95,8 @@ function resetGame() {
     onGround: true,
     sliding: false,
     slideMs: 0,
+    jumpHeld: false,
+    jumpHoldMs: 0,
     runFrame: 0,
     animMs: 0
   });
@@ -129,12 +133,15 @@ function update(dt) {
   }
 
   if (!player.onGround) {
-    player.vy += 1280 * seconds;
+    player.jumpHoldMs += dt * 1000;
+    const extendingJump = player.jumpHeld && player.jumpHoldMs < 180 && player.vy < 0;
+    player.vy += (extendingJump ? 720 : 1420) * seconds;
     player.y += player.vy * seconds;
     if (player.y >= GROUND_Y) {
       player.y = GROUND_Y;
       player.vy = 0;
       player.onGround = true;
+      player.jumpHeld = false;
     }
   }
 
@@ -145,13 +152,10 @@ function update(dt) {
     }
   }
 
-  spawnMs += dt * 1000;
-  if (spawnMs >= nextSpawnMs) {
+  distanceUntilSpawn -= speed * seconds;
+  if (distanceUntilSpawn <= 0) {
     spawnObstacle();
-    spawnMs = 0;
-    const minGap = Math.max(760, 1260 - score * 2.2);
-    const maxGap = Math.max(1000, 1700 - score * 2.6);
-    nextSpawnMs = rand(minGap, maxGap);
+    scheduleNextObstacle();
   }
 
   for (const cloud of clouds) {
@@ -175,6 +179,29 @@ function update(dt) {
       break;
     }
   }
+}
+
+function scheduleNextObstacle() {
+  const difficultyReduction = Math.min(0.28, score / 1400);
+  const roll = Math.random();
+  let band = score < 45 ? (roll < 0.72 ? "normal" : "long") :
+    (roll < 0.25 ? "short" : roll < 0.78 ? "normal" : "long");
+
+  // Avoid a mechanical rhythm by not repeating the same gap class too often.
+  if (band === lastGapBand && Math.random() < 0.58) {
+    band = band === "normal" ? (Math.random() < 0.5 ? "short" : "long") : "normal";
+  }
+
+  const secondsByBand = {
+    short: [1.05, 1.3],
+    normal: [1.5, 2.05],
+    long: [2.35, 3.15]
+  };
+  const [minSeconds, maxSeconds] = secondsByBand[band];
+  const gapSeconds = Math.max(1, rand(minSeconds, maxSeconds) - difficultyReduction);
+
+  distanceUntilSpawn = speed * gapSeconds;
+  lastGapBand = band;
 }
 
 function spawnObstacle() {
@@ -221,8 +248,17 @@ function jump() {
   if (state !== "playing" || !player.onGround) return;
 
   player.sliding = false;
-  player.vy = -590;
+  player.vy = -580;
   player.onGround = false;
+  player.jumpHeld = true;
+  player.jumpHoldMs = 0;
+}
+
+function releaseJump() {
+  player.jumpHeld = false;
+  if (!player.onGround && player.vy < -360) {
+    player.vy = -360;
+  }
 }
 
 function slide(active = true) {
@@ -383,7 +419,7 @@ function frame(time) {
 document.addEventListener("keydown", (event) => {
   if (event.code === "Space" || event.code === "ArrowUp") {
     event.preventDefault();
-    jump();
+    if (!event.repeat) jump();
   } else if (event.code === "ArrowDown") {
     event.preventDefault();
     slide(true);
@@ -391,7 +427,9 @@ document.addEventListener("keydown", (event) => {
 });
 
 document.addEventListener("keyup", (event) => {
-  if (event.code === "ArrowDown") {
+  if (event.code === "Space" || event.code === "ArrowUp") {
+    releaseJump();
+  } else if (event.code === "ArrowDown") {
     player.sliding = false;
   }
 });
@@ -405,6 +443,10 @@ jumpButton.addEventListener("pointerdown", (event) => {
   event.preventDefault();
   jump();
 });
+
+window.addEventListener("pointerup", releaseJump);
+window.addEventListener("pointercancel", releaseJump);
+window.addEventListener("blur", releaseJump);
 
 slideButton.addEventListener("pointerdown", (event) => {
   event.preventDefault();
