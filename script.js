@@ -11,8 +11,8 @@ const GROUND_Y = 286;
 const STORAGE_KEY = "mike-dash-high-score";
 const BASE_SPEED = 230;
 const MAX_SPEED = 540;
-const SPEED_RAMP = 0.85;
-const SPEED_STEP_SCORE = 50;
+const SPEED_RAMP = 1.7;
+const SPEED_STEP_SCORE = 25;
 const SPEED_STEP_AMOUNT = 12;
 
 const spriteSheet = new Image();
@@ -188,7 +188,7 @@ function update(dt) {
 }
 
 function scheduleNextObstacle() {
-  const difficultyReduction = Math.min(0.35, score / 800);
+  const difficultyReduction = Math.min(0.35, score / 400);
   const roll = Math.random();
   let band = score < 45 ? (roll < 0.72 ? "normal" : "long") :
     (roll < 0.25 ? "short" : roll < 0.78 ? "normal" : "long");
