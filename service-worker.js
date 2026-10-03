@@ -1,4 +1,4 @@
-const CACHE_NAME = "mike-dash-v4";
+const CACHE_NAME = "mike-dash-v5";
 const APP_ASSETS = [
   "./",
   "index.html",

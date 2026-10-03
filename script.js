@@ -9,11 +9,11 @@ const W = canvas.width;
 const H = canvas.height;
 const GROUND_Y = 286;
 const STORAGE_KEY = "mike-dash-high-score";
-const BASE_SPEED = 225;
-const MAX_SPEED = 510;
-const SPEED_RAMP = 0.5;
-const SPEED_STEP_SCORE = 80;
-const SPEED_STEP_AMOUNT = 9;
+const BASE_SPEED = 230;
+const MAX_SPEED = 540;
+const SPEED_RAMP = 0.85;
+const SPEED_STEP_SCORE = 50;
+const SPEED_STEP_AMOUNT = 12;
 
 const spriteSheet = new Image();
 spriteSheet.src = "assets/mike-chan-sprite.png";
@@ -188,7 +188,7 @@ function update(dt) {
 }
 
 function scheduleNextObstacle() {
-  const difficultyReduction = Math.min(0.28, score / 1400);
+  const difficultyReduction = Math.min(0.35, score / 800);
   const roll = Math.random();
   let band = score < 45 ? (roll < 0.72 ? "normal" : "long") :
     (roll < 0.25 ? "short" : roll < 0.78 ? "normal" : "long");
