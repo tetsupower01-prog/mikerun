@@ -9,6 +9,11 @@ const W = canvas.width;
 const H = canvas.height;
 const GROUND_Y = 286;
 const STORAGE_KEY = "mike-dash-high-score";
+const BASE_SPEED = 225;
+const MAX_SPEED = 510;
+const SPEED_RAMP = 0.5;
+const SPEED_STEP_SCORE = 80;
+const SPEED_STEP_AMOUNT = 9;
 
 const spriteSheet = new Image();
 spriteSheet.src = "assets/mike-chan-sprite.png";
@@ -68,7 +73,7 @@ let lastTime = 0;
 let score = 0;
 let displayScore = 0;
 let highScore = Number(localStorage.getItem(STORAGE_KEY) || 0);
-let speed = 240;
+let speed = BASE_SPEED;
 let distanceUntilSpawn = 340;
 let lastGapBand = "normal";
 let obstacles = [];
@@ -83,7 +88,7 @@ function resetGame() {
   state = "playing";
   score = 0;
   displayScore = 0;
-  speed = 240;
+  speed = BASE_SPEED;
   distanceUntilSpawn = 340;
   lastGapBand = "normal";
   obstacles = [];
@@ -119,7 +124,8 @@ function update(dt) {
   const seconds = dt;
   score += seconds * 10;
   displayScore = Math.floor(score);
-  speed = 240 + Math.min(180, score * 0.55);
+  const speedSteps = Math.floor(score / SPEED_STEP_SCORE) * SPEED_STEP_AMOUNT;
+  speed = BASE_SPEED + Math.min(MAX_SPEED - BASE_SPEED, score * SPEED_RAMP + speedSteps);
   const bgSpeed = speed * (0.35 + Math.min(0.25, Math.floor(score / 100) * 0.03));
   groundOffset = (groundOffset + bgSpeed * seconds) % 32;
 
